@@ -1,64 +1,76 @@
 const request = require('supertest');
 const app = require('../../app');
+const { mongoConnect, mongoDisconnect } = require('../../utils/mongo');
 
-describe('Test GET /launches', () => {
-    test('It should respond with 200 success', async () => {
-        await request(app)
-            .get('/launches')
-            .expect(200)
+/**TODO think of mocking DB*/
+describe('Launches API', () => {
+    beforeAll(async () => {
+        await mongoConnect()
     });
-})
 
-describe('Test POST /launches', () => {
-    const completeLaunchData = {
-        mission: 'USS Enterprise',
-        rocket: 'NCC 1701-D',
-        target: 'Kepler-186 f',
-        launchDate: 'January 4, 2028',
-    }
-    const launchDataWithoutDate = {
-        mission: 'USS Enterprise',
-        rocket: 'NCC 1701-D',
-        target: 'Kepler-186 f',
-    }
-    const launchDatWithInvalidDate = {
-        mission: 'USS Enterprise',
-        rocket: 'NCC 1701-D',
-        target: 'Kepler-186 f',
-        launchDate: 'not a date',
-    }
-
-    test('It should respond with 200 success', async () => {
-        const response = await request(app)
-            .post('/launches')
-            .send(completeLaunchData)
-            .expect(201);
-
-        const requestDate = new Date(completeLaunchData.launchDate).valueOf();
-        const responseDate = new Date(response.body.launchDate).valueOf();
-
-        expect(responseDate).toBe(requestDate);
-        expect(response.body).toMatchObject(launchDataWithoutDate);
+    afterAll(async () => {
+        await mongoDisconnect();
     })
 
-    test('It should catch missing required properties', async () => {
-        const response = await request(app)
-            .post('/launches')
-            .send(launchDataWithoutDate)
-            .expect(400);
+    describe('Test GET /launches', () => {
+        test('It should respond with 200 success', async () => {
+            await request(app)
+                .get('/launches')
+                .expect(200)
+        });
+    });
 
-        expect(response.body).toStrictEqual({
-            error: 'Missing required launch property',
+    describe('Test POST /launches', () => {
+        const completeLaunchData = {
+            mission: 'USS Enterprise',
+            rocket: 'NCC 1701-D',
+            target: 'Kepler-62 f',
+            launchDate: 'January 4, 2028',
+        }
+        const launchDataWithoutDate = {
+            mission: 'USS Enterprise',
+            rocket: 'NCC 1701-D',
+            target: 'Kepler-62 f',
+        }
+        const launchDatWithInvalidDate = {
+            mission: 'USS Enterprise',
+            rocket: 'NCC 1701-D',
+            target: 'Kepler-62 f',
+            launchDate: 'not a date',
+        }
+
+        test('It should respond with 200 success', async () => {
+            const response = await request(app)
+                .post('/launches')
+                .send(completeLaunchData)
+                .expect(201);
+
+            const requestDate = new Date(completeLaunchData.launchDate).valueOf();
+            const responseDate = new Date(response.body.launchDate).valueOf();
+
+            expect(responseDate).toBe(requestDate);
+            expect(response.body).toMatchObject(launchDataWithoutDate);
         })
-    })
-    test('It should catch invalid dates', async () => {
-        const response = await request(app)
-            .post('/launches')
-            .send(launchDatWithInvalidDate)
-            .expect(400);
 
-        expect(response.body).toStrictEqual({
-            error: 'Invalid launch date'
+        test('It should catch missing required properties', async () => {
+            const response = await request(app)
+                .post('/launches')
+                .send(launchDataWithoutDate)
+                .expect(400);
+
+            expect(response.body).toStrictEqual({
+                error: 'Missing required launch property',
+            })
+        })
+        test('It should catch invalid dates', async () => {
+            const response = await request(app)
+                .post('/launches')
+                .send(launchDatWithInvalidDate)
+                .expect(400);
+
+            expect(response.body).toStrictEqual({
+                error: 'Invalid launch date'
+            })
         })
     })
 })
