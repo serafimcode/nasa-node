@@ -4,6 +4,8 @@ const { mongoConnect, mongoDisconnect } = require('../../utils/mongo');
 
 /**TODO think of mocking DB*/
 describe('Launches API', () => {
+    const URL = '/v1/launches';
+
     beforeAll(async () => {
         await mongoConnect()
     });
@@ -15,7 +17,7 @@ describe('Launches API', () => {
     describe('Test GET /launches', () => {
         test('It should respond with 200 success', async () => {
             await request(app)
-                .get('/launches')
+                .get(URL)
                 .expect(200)
         });
     });
@@ -32,7 +34,7 @@ describe('Launches API', () => {
             rocket: 'NCC 1701-D',
             target: 'Kepler-62 f',
         }
-        const launchDatWithInvalidDate = {
+        const launchDataWithInvalidDate = {
             mission: 'USS Enterprise',
             rocket: 'NCC 1701-D',
             target: 'Kepler-62 f',
@@ -41,7 +43,7 @@ describe('Launches API', () => {
 
         test('It should respond with 200 success', async () => {
             const response = await request(app)
-                .post('/launches')
+                .post(URL)
                 .send(completeLaunchData)
                 .expect(201);
 
@@ -54,7 +56,7 @@ describe('Launches API', () => {
 
         test('It should catch missing required properties', async () => {
             const response = await request(app)
-                .post('/launches')
+                .post(URL)
                 .send(launchDataWithoutDate)
                 .expect(400);
 
@@ -64,8 +66,8 @@ describe('Launches API', () => {
         })
         test('It should catch invalid dates', async () => {
             const response = await request(app)
-                .post('/launches')
-                .send(launchDatWithInvalidDate)
+                .post(URL)
+                .send(launchDataWithInvalidDate)
                 .expect(400);
 
             expect(response.body).toStrictEqual({
