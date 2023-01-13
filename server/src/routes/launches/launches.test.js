@@ -1,13 +1,14 @@
 const request = require('supertest');
 const app = require('../../app');
 const { mongoConnect, mongoDisconnect } = require('../../utils/mongo');
+const { loadLaunchesData } = require("../../models/launches.model");
 
-/**TODO think of mocking DB*/
 describe('Launches API', () => {
     const URL = '/v1/launches';
 
     beforeAll(async () => {
-        await mongoConnect()
+        await mongoConnect();
+        await loadLaunchesData();
     });
 
     afterAll(async () => {
